@@ -58,8 +58,16 @@ const authLimiter = rateLimit({
   message: { error: 'Too many auth attempts, please try again later.' }
 });
 
-// MongoDB Connection — auto-seed after connect
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/krishiroute')
+// MongoDB Connection — auto-seed after connect (strict URI check)
+const mongoURI = process.env.MONGO_URI;
+
+if (!mongoURI) {
+  console.error('❌ MONGO_URI is not defined in environment variables');
+  console.error('Check your .env file locally or Render/Vercel settings in cloud.');
+  process.exit(1);
+}
+
+mongoose.connect(mongoURI)
   .then(async () => {
     console.log('✅ MongoDB Connected');
     // Run idempotent seed (no-op if data already exists)
